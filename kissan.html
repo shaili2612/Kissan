@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rabbit Runner Game</title>
+<style>
+  canvas {
+    background: #cceeff; /* sky color */
+    display: block;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="800" height="400"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let rabbit = { x: 50, y: 300, width: 50, height: 50, dy: 0, jumpPower: -12, gravity: 0.6 };
+let tomatoes = [];
+let score = 0;
+let gameOver = false;
+
+// Listen for jump
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && rabbit.y === 300) {
+        rabbit.dy = rabbit.jumpPower;
+    }
+});
+
+// Spawn tomatoes
+function spawnTomato() {
+    const tomato = { x: canvas.width, y: 300, width: 30, height: 30, scored: false };
+    tomatoes.push(tomato);
+}
+
+// Update game objects
+function update() {
+    if (gameOver) return;
+
+    // Rabbit physics
+    rabbit.dy += rabbit.gravity;
+    rabbit.y += rabbit.dy;
+    if (rabbit.y > 300) {
+        rabbit.y = 300;
+        rabbit.dy = 0;
+    }
+
+    // Move tomatoes
+    for (let i = 0; i < tomatoes.length; i++) {
+        tomatoes[i].x -= 5;
+
+        // Check collision
+        if (rabbit.x < tomatoes[i].x + tomatoes[i].width &&
+            rabbit.x + rabbit.width > tomatoes[i].x &&
+            rabbit.y < tomatoes[i].y + tomatoes[i].height &&
+            rabbit.y + rabbit.height > tomatoes[i].y) {
+            gameOver = true;
+        }
+
+        // Increase score
+        if (!tomatoes[i].scored && rabbit.x > tomatoes[i].x + tomatoes[i].width) {
+            score += 1;
+            tomatoes[i].scored = true;
+        }
+    }
+
+    // Remove offscreen tomatoes
+    tomatoes = tomatoes.filter(t => t.x + t.width > 0);
+}
+
+// Draw game objects
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw rabbit
+    ctx.fillStyle = 'white';
+    ctx.fillRect(rabbit.x, rabbit.y, rabbit.width, rabbit.height);
+
+    // Draw tomatoes
+    ctx.fillStyle = 'red';
+    tomatoes.forEach(t => ctx.fillRect(t.x, t.y, t.width, t.height));
+
+    // Draw score
+    ctx.fillStyle = 'black';
+    ctx.font = '24px Arial';
+    ctx.fillText(`Score: ${score}`, 10, 30);
+
+    if (gameOver) {
+        ctx.fillStyle = 'black';
+        ctx.font = '48px Arial';
+        ctx.fillText('Game Over!', canvas.width/2 - 120, canvas.height/2);
+    }
+}
+
+// Game loop
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+// Start game
+loop();
+setInterval(spawnTomato, 1500); // Spawn tomato every 1.5s
+</script>
+
+</body>
+</html>
