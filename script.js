@@ -3,17 +3,17 @@ const ctx = canvas.getContext("2d");
 
 // Online rabbit images
 const rabbitStand = new Image();
-rabbitStand.src = "rabbit.jpg"; // placeholder standing
+rabbitStand.src = "rabbit.jpeg"; // placeholder standing
 
 const rabbitJump = new Image();
-rabbitJump.src = "rabbit.jpg"; // placeholder jumping
+rabbitJump.src = "rabbit.jpeg"; // placeholder jumping
 
 const rabbitRunImages = [
-  "rabbit.jpg"].map(src => { const img = new Image(); img.src = src; return img; });
+  "rabbit.jpeg"].map(src => { const img = new Image(); img.src = src; return img; });
 
 // Online tomato images
 const tomatoImg = new Image();
-tomatoImg.src = "tomato250.jpg";
+tomatoImg.src = "Tomato250.jpg";
 
 const tomatoSquishImg = new Image();
 tomatoSquishImg.src = "tomato_squished.jpg";
