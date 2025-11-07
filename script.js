@@ -3,23 +3,20 @@ const ctx = canvas.getContext("2d");
 
 // Online rabbit images
 const rabbitStand = new Image();
-rabbitStand.src = "https://i.postimg.cc/8PMYzM3R/rabbit.png"; // placeholder standing
+rabbitStand.src = "rabbit.jpg"; // placeholder standing
 
 const rabbitJump = new Image();
-rabbitJump.src = "https://i.postimg.cc/0jXxq2F0/rabbit-jump.png"; // placeholder jumping
+rabbitJump.src = "rabbit.jpg"; // placeholder jumping
 
 const rabbitRunImages = [
-  "https://i.postimg.cc/8PMYzM3R/rabbit.png", // run1
-  "https://i.postimg.cc/8PMYzM3R/rabbit.png", // run2
-  "https://i.postimg.cc/8PMYzM3R/rabbit.png"  // run3
-].map(src => { const img = new Image(); img.src = src; return img; });
+  "rabbit.jpg"].map(src => { const img = new Image(); img.src = src; return img; });
 
 // Online tomato images
 const tomatoImg = new Image();
-tomatoImg.src = "https://i.postimg.cc/qBq8m7Yk/tomato.png";
+tomatoImg.src = "tomato250.jpg";
 
 const tomatoSquishImg = new Image();
-tomatoSquishImg.src = "https://i.postimg.cc/d0k0V8kQ/tomato-squished.png";
+tomatoSquishImg.src = "tomato_squished.jpg";
 
 // Game variables
 let score = 0;
