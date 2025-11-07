@@ -24,7 +24,7 @@ const rabbitJump = new Image();
 rabbitJump.src = "rabbit.jpg";
 
 const tomatoImg = new Image();
-tomatoImg.src = "tomato250.jpg";
+tomatoImg.src = "Tomato250.jpg";
 
 const tomatoSquishImg = new Image();
 tomatoSquishImg.src = "tomato_squished.jpg";
