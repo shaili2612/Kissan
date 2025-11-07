@@ -4,46 +4,68 @@ const ctx = canvas.getContext("2d");
 canvas.width = 800;
 canvas.height = 400;
 
+// ====== DOM Elements ======
+const gameOverScreen = document.getElementById("gameOverScreen");
+const finalScoreText = document.getElementById("finalScore");
+const restartBtn = document.getElementById("restartBtn");
+const shareBtn = document.getElementById("shareBtn");
+
 // ====== Game Assets ======
 const rabbitRunImages = [];
-const totalRabbitFrames = 2; // you can add more later
+const totalRabbitFrames = 2;
 
 for (let i = 1; i <= totalRabbitFrames; i++) {
   const img = new Image();
-  img.src = `rabbit${i}.png`; // example: rabbit1.png, rabbit2.png
+  img.src = `rabbit.jpg`;
   rabbitRunImages.push(img);
 }
 
 const rabbitJump = new Image();
-rabbitJump.src = "rabbit_jump.png";
+rabbitJump.src = "rabbit.jpg";
 
 const tomatoImg = new Image();
-tomatoImg.src = "tomato.png";
+tomatoImg.src = "tomato250.jpg";
+
+const tomatoSquishImg = new Image();
+tomatoSquishImg.src = "tomato_squished.jpg";
 
 // ====== Game Variables ======
-let rabbit = {
-  x: 100,
-  y: canvas.height - 120,
-  width: 80,
-  height: 80,
-  dy: 0,
-  gravity: 0.6,
-  jumpPower: -12,
-  onGround: true,
-  runFrame: 0
-};
+let rabbit, tomatoes, frameCount, score, gameOver;
 
-let tomatoes = [];
-let frameCount = 0;
-let score = 0;
-let jumpHeight = 60;
+function initGame() {
+  rabbit = {
+    x: 100,
+    y: canvas.height - 120,
+    width: 80,
+    height: 80,
+    dy: 0,
+    gravity: 0.6,
+    jumpPower: -12,
+    onGround: true,
+    runFrame: 0
+  };
+  tomatoes = [];
+  frameCount = 0;
+  score = 0;
+  gameOver = false;
+  gameOverScreen.style.display = "none";
+  update();
+}
 
 // ====== Controls ======
 window.addEventListener("keydown", (e) => {
-  if (e.code === "Space" && rabbit.onGround) {
+  if (e.code === "Space" && rabbit.onGround && !gameOver) {
     rabbit.dy = rabbit.jumpPower;
     rabbit.onGround = false;
   }
+});
+
+restartBtn.addEventListener("click", initGame);
+
+shareBtn.addEventListener("click", () => {
+  const shareText = `I scored ${score} points in the Kissan Game 🍅🐇!`;
+  const instagramUrl = `https://www.instagram.com/?text=${encodeURIComponent(shareText)}`;
+  window.open(instagramUrl, "_blank");
 });
 
 // ====== Functions ======
@@ -53,7 +75,9 @@ function spawnTomato() {
     x: canvas.width,
     y: canvas.height - 100,
     width: 50,
-    height: 50
+    height: 50,
+    squished: false,
+    squishTime: 0
   };
   tomatoes.push(tomato);
 }
@@ -72,7 +96,11 @@ function drawRabbit(r, jump = false) {
 
 function drawTomatoes() {
   for (const t of tomatoes) {
-    ctx.drawImage(tomatoImg, t.x, t.y, t.width, t.height);
+    if (t.squished) {
+      ctx.drawImage(tomatoSquishImg, t.x, t.y + 20, t.width, 25);
+    } else {
+      ctx.drawImage(tomatoImg, t.x, t.y, t.width, t.height);
+    }
   }
 }
 
@@ -85,7 +113,15 @@ function checkCollision(r, t) {
   );
 }
 
+function endGame() {
+  gameOver = true;
+  finalScoreText.textContent = `Game Over! 🎮 Your Score: ${score}`;
+  gameOverScreen.style.display = "flex";
+}
+
 function update() {
+  if (gameOver) return;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Background
@@ -111,12 +147,20 @@ function update() {
     const t = tomatoes[i];
     t.x -= 6;
 
-    if (checkCollision(rabbit, t)) {
-      tomatoes.splice(i, 1);
-      score += 10; // ✅ score increase
+    // Collision
+    if (!t.squished && checkCollision(rabbit, t)) {
+      t.squished = true;
+      t.squishTime = frameCount;
+      score += 10;
+
+      // 🎬 End game immediately when squished
+      endGame();
+      return;
     }
 
-    if (t.x + t.width < 0) {
+    if (t.squished && frameCount - t.squishTime > 20) {
+      tomatoes.splice(i, 1);
+    } else if (t.x + t.width < 0) {
       tomatoes.splice(i, 1);
     }
   }
@@ -126,7 +170,7 @@ function update() {
     spawnTomato();
   }
 
-  // Draw Everything
+  // Draw
   drawTomatoes();
   drawRabbit(rabbit, !rabbit.onGround);
 
@@ -140,4 +184,4 @@ function update() {
 }
 
 // ====== Start Game ======
-update();
+initGame();
