@@ -1,115 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rabbit Runner Kissan Game</title>
-<style>
-  canvas { background: #cceeff; display: block; margin: 0 auto; }
-  button {
-    position: absolute; top: 200px; left: 50%; transform: translateX(-50%);
-    font-size: 24px; padding: 10px 20px; display: none;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Rabbit Runner - Kissan Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #f4f1ea;
+    }
+    canvas {
+      background: url('https://upload.wikimedia.org/wikipedia/commons/8/87/Kissan_Tomato_Ketchup.jpg');
+      background-size: cover;
+      display: block;
+      margin: auto;
+    }
+  </style>
 </head>
 <body>
-
 <canvas id="gameCanvas" width="800" height="400"></canvas>
-<button id="playAgain">Play Again</button>
 
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-let rabbitImg = new Image();
-rabbitImg.src = 'rabbit.png';
-let rabbitSquishImg = new Image();
-rabbitSquishImg.src = 'rabbit_squish.png';
-let tomatoImg = new Image();
-tomatoImg.src = 'tomato.png';
-let kissanImg = new Image();
-kissanImg.src = 'kissan.png';
+// ✅ Using direct online images (no folder needed)
+const rabbitImg = new Image();
+rabbitImg.src = "rabbit.jpg";
 
-let rabbit = { x: 50, y: 300, width: 50, height: 50, dy: 0, jumpPower: -12, gravity: 0.6 };
-let tomatoes = [];
+const tomatoImg = new Image();
+tomatoImg.src = "tomato250.jpg";
+
+const tomatoSquishImg = new Image();
+tomatoSquishImg.src = "tomato_squished.jpg";
+
 let score = 0;
-let gameOver = false;
-let squished = false;
-let showKissan = false;
+let isJumping = false;
+let jumpHeight = 0;
+let jumpSpeed = 0;
+let gravity = 0.8;
 
-// Jump
-document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && rabbit.y === 300 && !gameOver) rabbit.dy = rabbit.jumpPower;
-});
+let rabbit = { x: 50, y: 300, width: 60, height: 60 };
+let tomato = { x: 800, y: 320, width: 50, height: 50, squished: false };
 
-// Play again button
-const btn = document.getElementById('playAgain');
-btn.addEventListener('click', () => {
-    rabbit.y = 300; rabbit.dy = 0;
-    tomatoes = []; score = 0; gameOver = false; squished = false; showKissan = false;
-    btn.style.display = 'none';
-});
-
-// Spawn tomatoes
-function spawnTomato() {
-    if (!gameOver) {
-        tomatoes.push({ x: canvas.width, y: 300, width: 30, height: 30, scored: false });
-    }
+function drawRabbit() {
+  ctx.drawImage(rabbitImg, rabbit.x, rabbit.y - jumpHeight, rabbit.width, rabbit.height);
 }
 
-// Update
+function drawTomato() {
+  if (tomato.squished) {
+    ctx.drawImage(tomatoSquishImg, tomato.x, tomato.y + 20, tomato.width, 25);
+  } else {
+    ctx.drawImage(tomatoImg, tomato.x, tomato.y, tomato.width, tomato.height);
+  }
+}
+
+function drawScore() {
+  ctx.font = "22px Arial";
+  ctx.fillStyle = "black";
+  ctx.fillText("Score: " + score, 10, 30);
+}
+
 function update() {
-    if (gameOver) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Rabbit physics
-    rabbit.dy += rabbit.gravity;
-    rabbit.y += rabbit.dy;
-    if (rabbit.y > 300) { rabbit.y = 300; rabbit.dy = 0; }
-
-    // Move tomatoes
-    for (let t of tomatoes) {
-        t.x -= 5;
-
-        // Collision
-        if (!squished && rabbit.x < t.x + t.width &&
-            rabbit.x + rabbit.width > t.x &&
-            rabbit.y < t.y + t.height &&
-            rabbit.y + rabbit.height > t.y) {
-                gameOver = true; squished = true;
-                setTimeout(() => { showKissan = true; btn.style.display = 'block'; }, 1000);
-        }
-
-        // Score
-        if (!t.scored && rabbit.x > t.x + t.width) { score += 1; t.scored = true; }
+  // Rabbit jump logic
+  if (isJumping) {
+    jumpHeight += jumpSpeed;
+    jumpSpeed -= gravity;
+    if (jumpHeight <= 0) {
+      jumpHeight = 0;
+      isJumping = false;
     }
+  }
 
-    // Remove offscreen
-    tomatoes = tomatoes.filter(t => t.x + t.width > 0);
+  // Tomato moves
+  tomato.x -= 6;
+  if (tomato.x + tomato.width < 0) {
+    tomato.x = 800 + Math.random() * 300;
+    tomato.squished = false;
+  }
+
+  // Collision detection
+  if (!tomato.squished &&
+      rabbit.x + rabbit.width > tomato.x &&
+      rabbit.x < tomato.x + tomato.width &&
+      rabbit.y - jumpHeight + rabbit.height > tomato.y) {
+    tomato.squished = true;
+    score += 1;
+  }
+
+  drawRabbit();
+  drawTomato();
+  drawScore();
+
+  requestAnimationFrame(update);
 }
 
-// Draw
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" && !isJumping) {
+    isJumping = true;
+    jumpSpeed = 12;
+  }
+});
 
-    // Rabbit
-    ctx.drawImage(squished ? rabbitSquishImg : rabbitImg, rabbit.x, rabbit.y, rabbit.width, rabbit.height);
-
-    // Tomatoes
-    for (let t of tomatoes) ctx.drawImage(tomatoImg, t.x, t.y, t.width, t.height);
-
-    // Kissan
-    if (showKissan) ctx.drawImage(kissanImg, canvas.width/2 - 25, 200, 50, 100);
-
-    // Score
-    ctx.fillStyle = 'black'; ctx.font = '24px Arial';
-    ctx.fillText(`Score: ${score}`, 10, 30);
-}
-
-// Loop
-function loop() { update(); draw(); requestAnimationFrame(loop); }
-loop();
-setInterval(spawnTomato, 1500);
-
+update();
 </script>
 </body>
 </html>
+
