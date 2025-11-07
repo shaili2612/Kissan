@@ -1,18 +1,173 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Rabbit Runner - Kissan Game</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kissan Game</title>
   <style>
-    body { margin: 0; overflow: hidden; background-color: #f4f1ea; }
-    canvas { display: block; margin: auto; background: url('https://upload.wikimedia.org/wikipedia/commons/8/87/Kissan_Tomato_Ketchup.jpg'); background-size: cover; }
+    body {
+      background: #f8f3e9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+    canvas {
+      border: 3px solid #a52a2a;
+      background-color: #fff;
+    }
+    #gameOverScreen {
+      display: none;
+      text-align: center;
+    }
+    #scoreDisplay {
+      font-size: 20px;
+      margin: 10px;
+    }
+    #shareBtn {
+      background-color: #ff4b4b;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    #shareBtn:hover {
+      background-color: #d93d3d;
+    }
   </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="800" height="400"></canvas>
-<script src="script.js"></script>
+  <h1>🐇 Kissan Tomato Game 🍅</h1>
+  <div id="scoreDisplay">Score: 0</div>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+  
+  <div id="gameOverScreen">
+    <h2>Game Over!</h2>
+    <img id="kissanAd" src="kissan.jpg" alt="Kissan Ad" width="300">
+    <h3 id="finalScore"></h3>
+    <button id="shareBtn">Share on Instagram 📲</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let rabbit = { x: 100, y: 300, width: 80, height: 80, vy: 0, jumping: false, runFrame: 0 };
+    let tomatoes = [];
+    let score = 0;
+    let gameOver = false;
+
+    const gravity = 0.5;
+    const jumpStrength = -10;
+    const jumpHeight = 80;
+
+    // --- Images ---
+    const rabbitRunImages = [new Image(), new Image()];
+    rabbitRunImages[0].src = "rabbit.jpeg";
+    rabbitRunImages[1].src = "rabbit.jpeg";
+    const rabbitJump = new Image();
+    rabbitJump.src = "rabbit.jpeg";
+    const tomatoImg = new Image();
+    tomatoImg.src = "Tomato250.jpg";
+    const squishImg = new Image();
+    squishImg.src = "tomato_squish.jpg";
+
+    // --- Input ---
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" && !rabbit.jumping && !gameOver) {
+        rabbit.vy = jumpStrength;
+        rabbit.jumping = true;
+      }
+    });
+
+    function spawnTomato() {
+      tomatoes.push({
+        x: canvas.width,
+        y: 320,
+        width: 50,
+        height: 50,
+        squished: false,
+        img: tomatoImg
+      });
+    }
+
+    function drawRabbit(r, jump = false) {
+      let img;
+      if (jump) img = rabbitJump;
+      else {
+        r.runFrame += 0.2;
+        if (r.runFrame >= rabbitRunImages.length) r.runFrame = 0;
+        img = rabbitRunImages[Math.floor(r.runFrame)];
+      }
+      ctx.drawImage(img, r.x, r.y - (jump ? jumpHeight : 0), r.width, r.height);
+    }
+
+    function update() {
+      if (gameOver) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Gravity
+      rabbit.vy += gravity;
+      rabbit.y += rabbit.vy;
+
+      if (rabbit.y >= 300) {
+        rabbit.y = 300;
+        rabbit.vy = 0;
+        rabbit.jumping = false;
+      }
+
+      drawRabbit(rabbit, rabbit.jumping);
+
+      // Tomatoes
+      tomatoes.forEach((t, i) => {
+        t.x -= 5;
+        ctx.drawImage(t.img, t.x, t.y, t.width, t.height);
+
+        // Collision
+        if (!t.squished &&
+            rabbit.x < t.x + t.width &&
+            rabbit.x + rabbit.width > t.x &&
+            rabbit.y < t.y + t.height &&
+            rabbit.y + rabbit.height > t.y) {
+          t.img = squishImg;
+          t.squished = true;
+          score += 1;
+          document.getElementById("scoreDisplay").innerText = "Score: " + score;
+
+          // End game after squish delay
+          setTimeout(() => endGame(), 800);
+        }
+
+        // Remove off-screen tomatoes
+        if (t.x + t.width < 0) tomatoes.splice(i, 1);
+      });
+
+      requestAnimationFrame(update);
+    }
+
+    function endGame() {
+      gameOver = true;
+      document.getElementById("finalScore").innerText = `Final Score: ${score}`;
+      document.getElementById("gameOverScreen").style.display = "block";
+      document.getElementById("gameCanvas").style.display = "none";
+    }
+
+    // Share button
+    document.getElementById("shareBtn").addEventListener("click", () => {
+      const shareText = `I scored ${score} points in the Kissan Tomato Game! 🍅🐇`;
+      const shareUrl = "https://www.instagram.com/"; // Instagram site
+      window.open(`${shareUrl}`, "_blank");
+      alert("Copy this text and share it in your story:\n" + shareText);
+    });
+
+    setInterval(spawnTomato, 2000);
+    update();
+  </script>
 </body>
 </html>
-
-
-
