@@ -3,23 +3,21 @@ const ctx = canvas.getContext("2d");
 
 // 🐇 Rabbit animation images
 const rabbitStand = new Image();
-rabbitStand.src = "images/rabbit_stand.png";
+rabbitStand.src = "rabbit.png";
 
 const rabbitJump = new Image();
-rabbitJump.src = "images/rabbit_jump.png";
+rabbitJump.src = "rabbit.png";
 
 const rabbitRunImages = [
-  "images/rabbit_run1.png",
-  "images/rabbit_run2.png",
-  "images/rabbit_run3.png"
+  "rabbit.jpg"
 ].map(src => { const img = new Image(); img.src = src; return img; });
 
 // 🍅 Tomato images
 const tomatoImg = new Image();
-tomatoImg.src = "images/tomato.png";
+tomatoImg.src = "tomato.jpg";
 
 const tomatoSquishImg = new Image();
-tomatoSquishImg.src = "images/tomato_squished.png";
+tomatoSquishImg.src = "tomato_squished.jpg";
 
 // Game variables
 let score = 0;
