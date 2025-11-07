@@ -49,16 +49,25 @@ for (let i = 0; i < 5; i++) {
 }
 
 // Draw rabbit
-function drawRabbit(r, jump=false) {
+function drawRabbit(r, jump = false) {
   let img;
-  if (jump) img = rabbitJump;
-  else {
+
+  if (jump) {
+    img = rabbitJump;
+  } else {
     r.runFrame += 0.2;
     if (r.runFrame >= rabbitRunImages.length) r.runFrame = 0;
     img = rabbitRunImages[Math.floor(r.runFrame)];
   }
-  ctx.drawImage(img, r.x, r.y - (jump ? jumpHeight : 0), r.width, r.height);
+
+  // ✅ Check if image exists and is loaded
+  if (img && img.complete) {
+    ctx.drawImage(img, r.x, r.y - (jump ? jumpHeight : 0), r.width, r.height);
+  } else {
+    console.warn("Rabbit image not ready yet:", img);
+  }
 }
+
 
 // Draw tomato
 function drawTomato(t) {
