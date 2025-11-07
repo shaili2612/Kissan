@@ -1,57 +1,65 @@
+// ====== Canvas Setup ======
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+canvas.width = 800;
+canvas.height = 400;
 
-// Online rabbit images
-const rabbitStand = new Image();
-rabbitStand.src = "rabbit.jpeg"; // placeholder standing
+// ====== Game Assets ======
+const rabbitRunImages = [];
+const totalRabbitFrames = 2; // you can add more later
 
-const rabbitJump = new Image();
-rabbitJump.src = "rabbit.jpeg"; // placeholder jumping
-
-const rabbitRunImages = [
-  "rabbit.jpeg"].map(src => { const img = new Image(); img.src = src; return img; });
-
-// Online tomato images
-const tomatoImg = new Image();
-tomatoImg.src = "Tomato250.jpg";
-
-const tomatoSquishImg = new Image();
-tomatoSquishImg.src = "tomato_squished.jpg";
-
-// Game variables
-let score = 0;
-let isJumping = false;
-let jumpHeight = 0;
-let jumpSpeed = 0;
-let gravity = 0.8;
-let runFrame = 0;
-
-// Player rabbit
-let player = { x: 50, y: 300, width: 60, height: 60 };
-
-// Background rabbits
-let rabbits = [
-  { x: 200, y: 300, width: 50, height: 50, runFrame: 0 },
-  { x: 400, y: 300, width: 50, height: 50, runFrame: 0 },
-  { x: 600, y: 300, width: 50, height: 50, runFrame: 0 },
-];
-
-// Tomatoes
-let tomatoes = [];
-for (let i = 0; i < 5; i++) {
-  tomatoes.push({
-    x: 800 + Math.random()*400,
-    y: 320,
-    width: 50,
-    height: 50,
-    squished: false
-  });
+for (let i = 1; i <= totalRabbitFrames; i++) {
+  const img = new Image();
+  img.src = `rabbit${i}.png`; // example: rabbit1.png, rabbit2.png
+  rabbitRunImages.push(img);
 }
 
-// Draw rabbit
+const rabbitJump = new Image();
+rabbitJump.src = "rabbit_jump.png";
+
+const tomatoImg = new Image();
+tomatoImg.src = "tomato.png";
+
+// ====== Game Variables ======
+let rabbit = {
+  x: 100,
+  y: canvas.height - 120,
+  width: 80,
+  height: 80,
+  dy: 0,
+  gravity: 0.6,
+  jumpPower: -12,
+  onGround: true,
+  runFrame: 0
+};
+
+let tomatoes = [];
+let frameCount = 0;
+let score = 0;
+let jumpHeight = 60;
+
+// ====== Controls ======
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Space" && rabbit.onGround) {
+    rabbit.dy = rabbit.jumpPower;
+    rabbit.onGround = false;
+  }
+});
+
+// ====== Functions ======
+
+function spawnTomato() {
+  const tomato = {
+    x: canvas.width,
+    y: canvas.height - 100,
+    width: 50,
+    height: 50
+  };
+  tomatoes.push(tomato);
+}
+
 function drawRabbit(r, jump = false) {
   let img;
-
   if (jump) {
     img = rabbitJump;
   } else {
@@ -59,90 +67,77 @@ function drawRabbit(r, jump = false) {
     if (r.runFrame >= rabbitRunImages.length) r.runFrame = 0;
     img = rabbitRunImages[Math.floor(r.runFrame)];
   }
+  ctx.drawImage(img, r.x, r.y, r.width, r.height);
+}
 
-  // ✅ Check if image exists and is loaded
-  if (img && img.complete) {
-    ctx.drawImage(img, r.x, r.y - (jump ? jumpHeight : 0), r.width, r.height);
-  } else {
-    console.warn("Rabbit image not ready yet:", img);
+function drawTomatoes() {
+  for (const t of tomatoes) {
+    ctx.drawImage(tomatoImg, t.x, t.y, t.width, t.height);
   }
 }
 
-
-// Draw tomato
-function drawTomato(t) {
-  if (t.squished) ctx.drawImage(tomatoSquishImg, t.x, t.y + 20, t.width, 25);
-  else ctx.drawImage(tomatoImg, t.x, t.y, t.width, t.height);
+function checkCollision(r, t) {
+  return (
+    r.x < t.x + t.width &&
+    r.x + r.width > t.x &&
+    r.y < t.y + t.height &&
+    r.y + r.height > t.y
+  );
 }
 
-// Draw score
-function drawScore() {
-  ctx.font = "22px Arial";
-  ctx.fillStyle = "black";
-  ctx.fillText("Score: " + score, 10, 30);
-}
-
-// Game loop
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Player jump
-  if (isJumping) {
-    jumpHeight += jumpSpeed;
-    jumpSpeed -= gravity;
-    if (jumpHeight <= 0) { jumpHeight = 0; isJumping = false; }
+  // Background
+  ctx.fillStyle = "#bde0fe";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Ground
+  ctx.fillStyle = "#90e0ef";
+  ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+
+  // Rabbit Physics
+  rabbit.y += rabbit.dy;
+  rabbit.dy += rabbit.gravity;
+
+  if (rabbit.y + rabbit.height >= canvas.height - 40) {
+    rabbit.y = canvas.height - 40 - rabbit.height;
+    rabbit.dy = 0;
+    rabbit.onGround = true;
   }
 
-  // Move background rabbits
-  rabbits.forEach(r => {
-    r.x -= 2;
-    if (r.x + r.width < 0) r.x = 800 + Math.random()*200;
-    drawRabbit(r);
-  });
-
-  // Move tomatoes
-  tomatoes.forEach(t => {
+  // Tomato Movement + Collision
+  for (let i = tomatoes.length - 1; i >= 0; i--) {
+    const t = tomatoes[i];
     t.x -= 6;
+
+    if (checkCollision(rabbit, t)) {
+      tomatoes.splice(i, 1);
+      score += 10; // ✅ score increase
+    }
+
     if (t.x + t.width < 0) {
-      t.x = 800 + Math.random()*400;
-      t.squished = false;
+      tomatoes.splice(i, 1);
     }
+  }
 
-    // Collision with player
-    if (!t.squished &&
-        player.x + player.width > t.x &&
-        player.x < t.x + t.width &&
-        player.y - jumpHeight + player.height > t.y &&
-        player.y - jumpHeight < t.y + t.height) {
-      t.squished = true;
-      score++;
-    }
+  // Spawn Tomatoes Every 120 Frames (~2 seconds)
+  if (frameCount % 120 === 0) {
+    spawnTomato();
+  }
 
-    drawTomato(t);
-  });
+  // Draw Everything
+  drawTomatoes();
+  drawRabbit(rabbit, !rabbit.onGround);
 
-  // Draw player
-  drawRabbit(player, isJumping);
+  // Draw Score
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  ctx.fillText("Score: " + score, 20, 30);
 
-  drawScore();
+  frameCount++;
   requestAnimationFrame(update);
 }
 
-// Jump key
-document.addEventListener("keydown", (e) => {
-  if (e.code === "Space" && !isJumping) {
-    isJumping = true;
-    jumpSpeed = 12;
-  }
-});
-
-// Wait for all images to load before starting
-function loadImages(images, callback) {
-  let loaded = 0;
-  images.forEach(img => {
-    img.onload = () => { loaded++; if (loaded === images.length) callback(); }
-  });
-}
-
-// Start game
-loadImages([rabbitStand, rabbitJump, ...rabbitRunImages, tomatoImg, tomatoSquishImg], update);
+// ====== Start Game ======
+update();
