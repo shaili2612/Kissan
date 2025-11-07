@@ -4,108 +4,14 @@
   <meta charset="UTF-8">
   <title>Rabbit Runner - Kissan Game</title>
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background-color: #f4f1ea;
-    }
-    canvas {
-      background: url('https://upload.wikimedia.org/wikipedia/commons/8/87/Kissan_Tomato_Ketchup.jpg');
-      background-size: cover;
-      display: block;
-      margin: auto;
-    }
+    body { margin: 0; overflow: hidden; background-color: #f4f1ea; }
+    canvas { display: block; margin: auto; background: url('https://upload.wikimedia.org/wikipedia/commons/8/87/Kissan_Tomato_Ketchup.jpg'); background-size: cover; }
   </style>
 </head>
 <body>
 <canvas id="gameCanvas" width="800" height="400"></canvas>
-
-<script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-// ✅ Using direct online images (no folder needed)
-const rabbitImg = new Image();
-rabbitImg.src = "rabbit.jpg";
-
-const tomatoImg = new Image();
-tomatoImg.src = "tomato250.jpg";
-
-const tomatoSquishImg = new Image();
-tomatoSquishImg.src = "tomato_squished.jpg";
-
-let score = 0;
-let isJumping = false;
-let jumpHeight = 0;
-let jumpSpeed = 0;
-let gravity = 0.8;
-
-let rabbit = { x: 50, y: 300, width: 60, height: 60 };
-let tomato = { x: 800, y: 320, width: 50, height: 50, squished: false };
-
-function drawRabbit() {
-  ctx.drawImage(rabbitImg, rabbit.x, rabbit.y - jumpHeight, rabbit.width, rabbit.height);
-}
-
-function drawTomato() {
-  if (tomato.squished) {
-    ctx.drawImage(tomatoSquishImg, tomato.x, tomato.y + 20, tomato.width, 25);
-  } else {
-    ctx.drawImage(tomatoImg, tomato.x, tomato.y, tomato.width, tomato.height);
-  }
-}
-
-function drawScore() {
-  ctx.font = "22px Arial";
-  ctx.fillStyle = "black";
-  ctx.fillText("Score: " + score, 10, 30);
-}
-
-function update() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Rabbit jump logic
-  if (isJumping) {
-    jumpHeight += jumpSpeed;
-    jumpSpeed -= gravity;
-    if (jumpHeight <= 0) {
-      jumpHeight = 0;
-      isJumping = false;
-    }
-  }
-
-  // Tomato moves
-  tomato.x -= 6;
-  if (tomato.x + tomato.width < 0) {
-    tomato.x = 800 + Math.random() * 300;
-    tomato.squished = false;
-  }
-
-  // Collision detection
-  if (!tomato.squished &&
-      rabbit.x + rabbit.width > tomato.x &&
-      rabbit.x < tomato.x + tomato.width &&
-      rabbit.y - jumpHeight + rabbit.height > tomato.y) {
-    tomato.squished = true;
-    score += 1;
-  }
-
-  drawRabbit();
-  drawTomato();
-  drawScore();
-
-  requestAnimationFrame(update);
-}
-
-document.addEventListener("keydown", (e) => {
-  if (e.code === "Space" && !isJumping) {
-    isJumping = true;
-    jumpSpeed = 12;
-  }
-});
-
-update();
-</script>
+<script src="script.js"></script>
 </body>
 </html>
+
 
