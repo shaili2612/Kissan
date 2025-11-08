@@ -48,7 +48,7 @@
   
   <div id="gameOverScreen">
     <h2>Game Over!</h2>
-    <img id="kissanAd" src="kissan.jpg" alt="Kissan Ad" width="300">
+    <img id="kissanAd" src="kissan_ad.png" alt="Kissan Ad" width="300">
     <h3 id="finalScore"></h3>
     <button id="shareBtn">Share on Instagram 📲</button>
   </div>
@@ -112,7 +112,7 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Gravity
+      // Gravity + movement
       rabbit.vy += gravity;
       rabbit.y += rabbit.vy;
 
@@ -129,19 +129,20 @@
         t.x -= 5;
         ctx.drawImage(t.img, t.x, t.y, t.width, t.height);
 
-        // Collision
-        if (!t.squished &&
-            rabbit.x < t.x + t.width &&
-            rabbit.x + rabbit.width > t.x &&
-            rabbit.y < t.y + t.height &&
-            rabbit.y + rabbit.height > t.y) {
+        // Collision detection — only if rabbit is low enough
+        if (
+          !t.squished &&
+          rabbit.x < t.x + t.width &&
+          rabbit.x + rabbit.width > t.x &&
+          rabbit.y + rabbit.height > t.y + 20 // more precise (avoid false hits midair)
+        ) {
           t.img = squishImg;
           t.squished = true;
           score += 1;
           document.getElementById("scoreDisplay").innerText = "Score: " + score;
 
-          // End game after squish delay
-          setTimeout(() => endGame(), 800);
+          // Show squish for 1 second, then end game
+          setTimeout(() => endGame(), 1000);
         }
 
         // Remove off-screen tomatoes
@@ -161,7 +162,7 @@
     // Share button
     document.getElementById("shareBtn").addEventListener("click", () => {
       const shareText = `I scored ${score} points in the Kissan Tomato Game! 🍅🐇`;
-      const shareUrl = "https://www.instagram.com/"; // Instagram site
+      const shareUrl = "https://www.instagram.com/";
       window.open(`${shareUrl}`, "_blank");
       alert("Copy this text and share it in your story:\n" + shareText);
     });
