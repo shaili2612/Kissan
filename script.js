@@ -1,92 +1,46 @@
-// ====== Canvas Setup ======
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-canvas.width = 800;
-canvas.height = 400;
 
-// ====== DOM Elements ======
-const gameOverScreen = document.getElementById("gameOverScreen");
-const finalScoreText = document.getElementById("finalScore");
-const restartBtn = document.getElementById("restartBtn");
-const shareBtn = document.getElementById("shareBtn");
+let rabbit = { x: 100, y: 300, width: 80, height: 80, vy: 0, jumping: false, runFrame: 0 };
+let tomatoes = [];
+let score = 0;
+let gameOver = false;
 
-// ====== Game Assets ======
-const rabbitRunImages = [];
-const totalRabbitFrames = 2;
+const gravity = 0.5;
+const jumpStrength = -10;
 
-for (let i = 1; i <= totalRabbitFrames; i++) {
-  const img = new Image();
-  img.src = `rabbit.jpg`;
-  rabbitRunImages.push(img);
-}
-
+const rabbitRunImages = [new Image(), new Image()];
+rabbitRunImages[0].src = "rabbit.jpeg";
+rabbitRunImages[1].src = "rabbit.jpeg";
 const rabbitJump = new Image();
-rabbitJump.src = "rabbit.jpg";
-
+rabbitJump.src = "rabbit.jpeg";
 const tomatoImg = new Image();
 tomatoImg.src = "Tomato250.jpg";
+const squishImg = new Image();
+squishImg.src = "tomato_squish.jpg";
 
-const tomatoSquishImg = new Image();
-tomatoSquishImg.src = "tomato_squished.jpg";
-
-// ====== Game Variables ======
-let rabbit, tomatoes, frameCount, score, gameOver;
-
-function initGame() {
-  rabbit = {
-    x: 100,
-    y: canvas.height - 120,
-    width: 80,
-    height: 80,
-    dy: 0,
-    gravity: 0.6,
-    jumpPower: -12,
-    onGround: true,
-    runFrame: 0
-  };
-  tomatoes = [];
-  frameCount = 0;
-  score = 0;
-  gameOver = false;
-  gameOverScreen.style.display = "none";
-  update();
-}
-
-// ====== Controls ======
-window.addEventListener("keydown", (e) => {
-  if (e.code === "Space" && rabbit.onGround && !gameOver) {
-    rabbit.dy = rabbit.jumpPower;
-    rabbit.onGround = false;
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && !rabbit.jumping && !gameOver) {
+    rabbit.vy = jumpStrength;
+    rabbit.jumping = true;
   }
 });
 
-restartBtn.addEventListener("click", initGame);
-
-shareBtn.addEventListener("click", () => {
-  const shareText = `I scored ${score} points in the Kissan Game 🍅🐇!`;
-  const instagramUrl = `https://www.instagram.com/?text=${encodeURIComponent(shareText)}`;
-  window.open(instagramUrl, "_blank");
-});
-
-// ====== Functions ======
-
 function spawnTomato() {
-  const tomato = {
+  tomatoes.push({
     x: canvas.width,
-    y: canvas.height - 100,
+    y: 320,
     width: 50,
     height: 50,
     squished: false,
-    squishTime: 0
-  };
-  tomatoes.push(tomato);
+    img: tomatoImg
+  });
 }
 
 function drawRabbit(r, jump = false) {
   let img;
-  if (jump) {
-    img = rabbitJump;
-  } else {
+  if (jump) img = rabbitJump;
+  else {
     r.runFrame += 0.2;
     if (r.runFrame >= rabbitRunImages.length) r.runFrame = 0;
     img = rabbitRunImages[Math.floor(r.runFrame)];
@@ -94,94 +48,61 @@ function drawRabbit(r, jump = false) {
   ctx.drawImage(img, r.x, r.y, r.width, r.height);
 }
 
-function drawTomatoes() {
-  for (const t of tomatoes) {
-    if (t.squished) {
-      ctx.drawImage(tomatoSquishImg, t.x, t.y + 20, t.width, 25);
-    } else {
-      ctx.drawImage(tomatoImg, t.x, t.y, t.width, t.height);
-    }
-  }
-}
-
-function checkCollision(r, t) {
-  return (
-    r.x < t.x + t.width &&
-    r.x + r.width > t.x &&
-    r.y < t.y + t.height &&
-    r.y + r.height > t.y
-  );
-}
-
-function endGame() {
-  gameOver = true;
-  finalScoreText.textContent = `Game Over! 🎮 Your Score: ${score}`;
-  gameOverScreen.style.display = "flex";
-}
-
 function update() {
   if (gameOver) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Background
-  ctx.fillStyle = "#bde0fe";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Ground
-  ctx.fillStyle = "#90e0ef";
-  ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
-
-  // Rabbit Physics
-  rabbit.y += rabbit.dy;
-  rabbit.dy += rabbit.gravity;
-
-  if (rabbit.y + rabbit.height >= canvas.height - 40) {
-    rabbit.y = canvas.height - 40 - rabbit.height;
-    rabbit.dy = 0;
-    rabbit.onGround = true;
+  // Rabbit gravity
+  rabbit.vy += gravity;
+  rabbit.y += rabbit.vy;
+  if (rabbit.y >= 300) {
+    rabbit.y = 300;
+    rabbit.vy = 0;
+    rabbit.jumping = false;
   }
 
-  // Tomato Movement + Collision
-  for (let i = tomatoes.length - 1; i >= 0; i--) {
-    const t = tomatoes[i];
-    t.x -= 6;
+  drawRabbit(rabbit, rabbit.jumping);
 
-    // Collision
-    if (!t.squished && checkCollision(rabbit, t)) {
+  // Tomatoes movement + collision
+  tomatoes.forEach((t, i) => {
+    t.x -= 5;
+    ctx.drawImage(t.img, t.x, t.y, t.width, t.height);
+
+    // Collision detection
+    if (
+      !t.squished &&
+      rabbit.x < t.x + t.width &&
+      rabbit.x + rabbit.width > t.x &&
+      rabbit.y + rabbit.height > t.y + 20
+    ) {
+      t.img = squishImg;
       t.squished = true;
-      t.squishTime = frameCount;
-      score += 10;
+      score += 1;
+      document.getElementById("scoreDisplay").innerText = "Score: " + score;
 
-      // 🎬 End game immediately when squished
-      endGame();
-      return;
+      setTimeout(() => endGame(), 1000); // delay before game over
     }
 
-    if (t.squished && frameCount - t.squishTime > 20) {
-      tomatoes.splice(i, 1);
-    } else if (t.x + t.width < 0) {
-      tomatoes.splice(i, 1);
-    }
-  }
+    if (t.x + t.width < 0) tomatoes.splice(i, 1);
+  });
 
-  // Spawn Tomatoes Every 120 Frames (~2 seconds)
-  if (frameCount % 120 === 0) {
-    spawnTomato();
-  }
-
-  // Draw
-  drawTomatoes();
-  drawRabbit(rabbit, !rabbit.onGround);
-
-  // Draw Score
-  ctx.fillStyle = "black";
-  ctx.font = "20px Arial";
-  ctx.fillText("Score: " + score, 20, 30);
-
-  frameCount++;
   requestAnimationFrame(update);
 }
 
-// ====== Start Game ======
-initGame();
+function endGame() {
+  gameOver = true;
+  document.getElementById("finalScore").innerText = `Final Score: ${score}`;
+  document.getElementById("gameOverScreen").style.display = "block";
+  document.getElementById("gameCanvas").style.display = "none";
+}
+
+document.getElementById("shareBtn").addEventListener("click", () => {
+  const shareText = `I scored ${score} points in the Kissan Tomato Game! 🍅🐇`;
+  const shareUrl = "https://www.instagram.com/";
+  window.open(`${shareUrl}`, "_blank");
+  alert("Copy this text and share it in your story:\n" + shareText);
+});
+
+setInterval(spawnTomato, 2000);
+update();
