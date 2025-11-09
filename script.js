@@ -1,4 +1,3 @@
-// 🎮 Game setup
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -13,9 +12,9 @@ const tomatoImg = new Image();
 tomatoImg.src = "Tomato250.jpg";
 
 const tomatoSquishImg = new Image();
-tomatoSquishImg.src = "tomato_squished.jpg"; // ✅ Make sure this filename EXACTLY matches your file!
+tomatoSquishImg.src = "tomato_squish.jpg"; // ✅ Make sure this filename is correct!
 
-// ✅ Wait until all images load before starting
+// ✅ Wait until all images load
 let imagesLoaded = 0;
 [rabbitImg, tomatoImg, tomatoSquishImg].forEach((img) => {
   img.onload = () => {
@@ -31,6 +30,8 @@ let score = 0;
 let gameOver = false;
 let gravity = 0.5;
 let adShown = false;
+let lastTomatoTime = 0;
+let tomatoDelay = 2000; // 🕒 at least 2 seconds between tomatoes
 
 // 🕹️ Controls
 document.addEventListener("keydown", (e) => {
@@ -40,16 +41,22 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// 🍅 Spawn tomatoes
+// 🍅 Spawn tomatoes (with spacing)
 function spawnTomato() {
+  const now = Date.now();
+  const lastTomato = tomatoes[tomatoes.length - 1];
+  if (lastTomato && lastTomato.x > 500) return; // 🧱 Don't spawn too close
+  if (now - lastTomatoTime < tomatoDelay) return; // ⏳ Cooldown
+
   tomatoes.push({
-    x: canvas.width,
+    x: canvas.width + Math.random() * 200,
     y: 320,
     width: 60,
     height: 60,
     squished: false,
     squishTime: 0
   });
+  lastTomatoTime = now;
 }
 
 // 🚀 Start game
@@ -94,14 +101,14 @@ function update() {
     }
   }
 
-  // 🍅 Remove off-screen tomatoes and expired squishes
+  // 🍅 Remove off-screen or expired squished tomatoes
   tomatoes = tomatoes.filter((t) => {
     if (t.squished && Date.now() - t.squishTime > 800) return false;
     return t.x + t.width > 0;
   });
 
-  // 🌱 Occasionally add new tomatoes
-  if (Math.random() < 0.02) spawnTomato();
+  // 🌱 Add tomatoes only if spaced enough
+  spawnTomato();
 
   draw();
   requestAnimationFrame(update);
@@ -119,7 +126,7 @@ function draw() {
   // 🍅 Tomatoes
   for (let t of tomatoes) {
     if (t.squished) {
-      ctx.drawImage(tomatoSquishImg, t.x, t.y, t.width, t.height);
+      ctx.drawImage(tomatoSquishImg, t.x, t.y + 10, t.width, t.height - 10);
     } else {
       ctx.drawImage(tomatoImg, t.x, t.y, t.width, t.height);
     }
@@ -144,7 +151,7 @@ function endGame() {
   if (!adShown) {
     adShown = true;
     const adImg = new Image();
-    adImg.src = "kissan_ad.jpg"; // Replace with your actual ad image name
+    adImg.src = "kissan_ad.jpg";
     adImg.onload = () => {
       ctx.drawImage(adImg, 280, 220, 250, 130);
 
@@ -175,3 +182,4 @@ function endGame() {
     };
   }
 }
+
