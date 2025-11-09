@@ -8,7 +8,7 @@ let gameOver = false;
 let score = 0;
 
 const rabbitImg = new Image();
-rabbitImg.src = "rabbit.jpeg";
+rabbitImg.src = "rabbit.png";
 
 const tomatoImg = new Image();
 tomatoImg.src = "Tomato250.jpg";
