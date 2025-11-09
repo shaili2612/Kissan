@@ -6,54 +6,52 @@
   <title>Kissan Game</title>
   <style>
     body {
-      background: #f8f3e9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
       margin: 0;
-      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+      background-color: pink;
+      text-align: center;
+      font-family: Arial;
     }
     canvas {
-      border: 3px solid #a52a2a;
-      background-color: #fff;
+      display: block;
+      margin: auto;
+      background-color: #fff0f5;
     }
-    #gameOverScreen {
-      display: none;
+    #gameOver {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
+      display: none;
     }
-    #scoreDisplay {
-      font-size: 20px;
-      margin: 10px;
+    #gameOver img {
+      width: 400px;
+      border-radius: 15px;
     }
     #shareBtn {
-      background-color: #ff4b4b;
-      color: white;
-      padding: 10px 20px;
+      margin-top: 10px;
+      background-color: #ff4d94;
       border: none;
+      padding: 10px 20px;
+      color: white;
       border-radius: 10px;
       cursor: pointer;
-      margin-top: 10px;
-    }
-    #shareBtn:hover {
-      background-color: #d93d3d;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <h1>🐇 Kissan Tomato Game 🍅</h1>
-  <div id="scoreDisplay">Score: 0</div>
   <canvas id="gameCanvas" width="800" height="400"></canvas>
-  
-  <div id="gameOverScreen">
+
+  <div id="gameOver">
     <h2>Game Over!</h2>
-    <img id="kissanAd" src="kissan.jpg" alt="Kissan Ad" width="300">
-    <h3 id="finalScore"></h3>
-    <button id="shareBtn">Share on Instagram 📲</button>
+    <p id="finalScore"></p>
+    <img id="kissanAd" src="kissanad.jpg" alt="Kissan Ad" />
+    <br />
+    <button id="shareBtn">Share on Instagram</button>
   </div>
 
-  <!-- ✅ Load your script -->
   <script src="script.js"></script>
 </body>
 </html>
