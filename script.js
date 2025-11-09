@@ -16,9 +16,6 @@ tomatoImg.src = "Tomato250.jpg";
 const tomatoSquishedImg = new Image();
 tomatoSquishedImg.src = "tomato_squished.jpg"; // <-- add your squish image
 
-const jumpSound = new Audio();
-const squishSound = new Audio();
-squishSound.src = "squish.mp3"; // optional sound
 
 function spawnTomato() {
   const lastTomato = tomatoes[tomatoes.length - 1];
@@ -65,7 +62,6 @@ function update() {
         rabbit.x + rabbit.width > t.x &&
         rabbit.y + rabbit.height > t.y) {
       t.squished = true;
-      squishSound.play();
       endGame();
     } else if (t.x + t.width < rabbit.x && !t.passed) {
       score++;
