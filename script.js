@@ -12,7 +12,7 @@ const tomatoImg = new Image();
 tomatoImg.src = "Tomato250.jpg";
 
 const tomatoSquishImg = new Image();
-tomatoSquishImg.src = "tomato_squish.jpg"; // ✅ Make sure this filename is correct!
+tomatoSquishImg.src = "tomato_squished.jpg"; // ✅ Make sure this filename is correct!
 
 // ✅ Wait until all images load
 let imagesLoaded = 0;
